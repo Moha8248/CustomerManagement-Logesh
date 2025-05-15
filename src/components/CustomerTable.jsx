@@ -1,3 +1,4 @@
+// File: src/components/CustomerTable.js
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -6,6 +7,7 @@ import { toast } from 'react-toastify';
 const CustomerTable = ({ onEdit, refresh }) => {
     const [customers, setCustomers] = useState([]);
     const [search, setSearch] = useState("");
+    const [activeMobile, setActiveMobile] = useState(null);
 
     const fetchCustomers = async () => {
         const snapshot = await getDocs(collection(db, "customers"));
@@ -28,6 +30,10 @@ const CustomerTable = ({ onEdit, refresh }) => {
             value?.toString().toLowerCase().includes(search.toLowerCase())
         )
     );
+
+    const toggleMobileMenu = (id) => {
+        setActiveMobile(prev => (prev === id ? null : id));
+    };
 
     return (
         <div className="space-y-4">
@@ -54,9 +60,36 @@ const CustomerTable = ({ onEdit, refresh }) => {
                     </thead>
                     <tbody>
                         {filtered.map((c) => (
-                            <tr key={c.id} className="border-b hover:bg-gray-100">
+                            <tr key={c.id} className="border-b hover:bg-gray-100 relative">
                                 <td className="px-3 py-2">{c.name}</td>
-                                <td className="px-3 py-2">{c.mobile}</td>
+                                <td className="px-3 py-2 relative">
+                                    <span
+                                        className="cursor-pointer text-blue-600 underline"
+                                        onClick={() => toggleMobileMenu(c.id)}
+                                    >
+                                        {c.mobile}
+                                    </span>
+                                    {activeMobile === c.id && (
+                                        <div className="absolute z-10 mt-1 bg-white border border-gray-300 shadow-md rounded-md p-2 space-y-1">
+                                            <a
+                                                href={`tel:${c.mobile}`}
+                                                className="block text-blue-600 hover:underline"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                📞 Call
+                                            </a>
+                                            <a
+                                                href={`https://wa.me/91${c.mobile}`}
+                                                className="block text-green-600 hover:underline"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                💬 WhatsApp
+                                            </a>
+                                        </div>
+                                    )}
+                                </td>
                                 <td className="px-3 py-2">{c.address}</td>
                                 <td className="px-3 py-2">{c.city}</td>
                                 <td className="px-3 py-2">{c.budget}</td>
