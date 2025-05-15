@@ -50,9 +50,9 @@ const CustomerTable = ({ onEdit, refresh }) => {
                             <th className="px-3 py-2 text-left">Name</th>
                             <th className="px-3 py-2 text-left">Mobile</th>
                             <th className="px-3 py-2 text-left">Address</th>
-                            <th className="px-3 py-2 text-left">City</th>
+                            <th className="px-3 py-2 text-left">Land or Plot Required City</th>
                             <th className="px-3 py-2 text-left">Budget</th>
-                            <th className="px-3 py-2 text-left">Space</th>
+                            <th className="px-3 py-2 text-left">Required Land (in Sq Ft)</th>
                             <th className="px-3 py-2 text-left">Response</th>
                             <th className="px-3 py-2 text-left">Notes</th>
                             <th className="px-3 py-2">Actions</th>

@@ -29,11 +29,22 @@ const CustomerForm = ({ onSave, selectedCustomer }) => {
         });
     };
 
+    const getLabel = (field) => {
+        switch (field) {
+            case 'city':
+                return 'Land or Plot Required City';
+            case 'space':
+                return 'Required Land (in Sq Ft)';
+            default:
+                return field.charAt(0).toUpperCase() + field.slice(1);
+        }
+    };
+
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
             {["name", "mobile", "address", "city", "budget", "space"].map((field) => (
                 <div key={field}>
-                    <label className="block text-sm font-semibold mb-1 capitalize">{field}</label>
+                    <label className="block text-sm font-semibold mb-1">{getLabel(field)}</label>
                     <input
                         name={field}
                         value={customer[field]}
