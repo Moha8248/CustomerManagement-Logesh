@@ -1,115 +1,99 @@
-// File: src/components/CustomerTable.js
-import React, { useState, useEffect } from 'react';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
-import { db } from '../firebase';
-import { toast } from 'react-toastify';
+// src/components/CustomerTable.jsx
+import React, { useEffect, useState } from "react";
+import { db } from "../firebase";
+import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { toast } from "react-toastify";
 
 const CustomerTable = ({ onEdit, refresh }) => {
     const [customers, setCustomers] = useState([]);
-    const [search, setSearch] = useState("");
-    const [activeMobile, setActiveMobile] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const fetchCustomers = async () => {
-        const snapshot = await getDocs(collection(db, "customers"));
-        const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setCustomers(list);
-    };
-
-    const handleDelete = async (id) => {
-        await deleteDoc(doc(db, "customers", id));
-        toast.error("Customer deleted!");
-        fetchCustomers();
+        setLoading(true);
+        try {
+            const querySnapshot = await getDocs(collection(db, "customers"));
+            const customerList = querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }));
+            setCustomers(customerList);
+        } catch (error) {
+            console.error("Error fetching customers: ", error);
+            toast.error("Failed to load customers");
+        }
+        setLoading(false);
     };
 
     useEffect(() => {
         fetchCustomers();
     }, [refresh]);
 
-    const filtered = customers.filter((c) =>
-        Object.values(c).some(value =>
-            value?.toString().toLowerCase().includes(search.toLowerCase())
-        )
-    );
-
-    const toggleMobileMenu = (id) => {
-        setActiveMobile(prev => (prev === id ? null : id));
+    const handleDelete = async (id) => {
+        if (window.confirm("Are you sure you want to delete this customer?")) {
+            try {
+                await deleteDoc(doc(db, "customers", id));
+                toast.success("Customer deleted");
+                fetchCustomers();
+            } catch (error) {
+                console.error("Delete error:", error);
+                toast.error("Failed to delete customer");
+            }
+        }
     };
 
+    if (loading) {
+        return <div className="text-center p-4">Loading customers...</div>;
+    }
+
+    if (customers.length === 0) {
+        return <div className="text-center p-4">No customers found.</div>;
+    }
+
     return (
-        <div className="space-y-4">
-            <input
-                type="text"
-                placeholder="Search all fields..."
-                className="w-full p-2 rounded-md border border-gray-300"
-                onChange={(e) => setSearch(e.target.value)}
-            />
-            <div className="overflow-x-auto">
-                <table className="min-w-full text-sm bg-white text-black rounded-md overflow-hidden shadow">
-                    <thead className="bg-gray-200">
-                        <tr>
-                            <th className="px-3 py-2 text-left">Name</th>
-                            <th className="px-3 py-2 text-left">Mobile</th>
-                            <th className="px-3 py-2 text-left">Address</th>
-                            <th className="px-3 py-2 text-left">Land or Plot Required City</th>
-                            <th className="px-3 py-2 text-left">Budget</th>
-                            <th className="px-3 py-2 text-left">Required Land (in Sq Ft)</th>
-                            <th className="px-3 py-2 text-left">Response</th>
-                            <th className="px-3 py-2 text-left">Notes</th>
-                            <th className="px-3 py-2">Actions</th>
+        <div className="overflow-x-auto">
+            <table className="min-w-full border-collapse border border-gray-300 rounded-md">
+                <thead className="bg-gray-200">
+                    <tr>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Name</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Mobile</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Address</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">City</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Budget</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Space (Sq Ft)</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Response</th>
+                        <th className="border border-gray-300 px-3 py-2 text-left">Notes</th>
+                        <th className="border border-gray-300 px-3 py-2 text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {customers.map((cust) => (
+                        <tr key={cust.id} className="hover:bg-gray-100">
+                            <td className="border border-gray-300 px-3 py-2">{cust.name}</td>
+                            <td className="border border-gray-300 px-3 py-2">{cust.mobile}</td>
+                            <td className="border border-gray-300 px-3 py-2">{cust.address}</td>
+                            <td className="border border-gray-300 px-3 py-2">{cust.city}</td>
+                            <td className="border border-gray-300 px-3 py-2">{cust.budget}</td>
+                            <td className="border border-gray-300 px-3 py-2">{cust.space}</td>
+                            <td className="border border-gray-300 px-3 py-2">{cust.response}</td>
+                            <td className="border border-gray-300 px-3 py-2 max-w-xs truncate">{cust.notes}</td>
+                            <td className="border border-gray-300 px-3 py-2 text-center space-x-2">
+                                <button
+                                    onClick={() => onEdit(cust)}
+                                    className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(cust.id)}
+                                    className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                                >
+                                    Delete
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {filtered.map((c) => (
-                            <tr key={c.id} className="border-b hover:bg-gray-100 relative">
-                                <td className="px-3 py-2">{c.name}</td>
-                                <td className="px-3 py-2 relative">
-                                    <span
-                                        className="cursor-pointer text-blue-600 underline"
-                                        onClick={() => toggleMobileMenu(c.id)}
-                                    >
-                                        {c.mobile}
-                                    </span>
-                                    {activeMobile === c.id && (
-                                        <div className="absolute z-10 mt-1 bg-white border border-gray-300 shadow-md rounded-md p-2 space-y-1">
-                                            <a
-                                                href={`tel:${c.mobile}`}
-                                                className="block text-blue-600 hover:underline"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                📞 Call
-                                            </a>
-                                            <a
-                                                href={`https://wa.me/91${c.mobile}`}
-                                                className="block text-green-600 hover:underline"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                💬 WhatsApp
-                                            </a>
-                                        </div>
-                                    )}
-                                </td>
-                                <td className="px-3 py-2">{c.address}</td>
-                                <td className="px-3 py-2">{c.city}</td>
-                                <td className="px-3 py-2">{c.budget}</td>
-                                <td className="px-3 py-2">{c.space}</td>
-                                <td className="px-3 py-2">{c.response}</td>
-                                <td className="px-3 py-2">{c.notes}</td>
-                                <td className="px-3 py-2 flex flex-wrap gap-2">
-                                    <button onClick={() => onEdit(c)} className="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
-                                    <button onClick={() => handleDelete(c.id)} className="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
-                                </td>
-                            </tr>
-                        ))}
-                        {filtered.length === 0 && (
-                            <tr>
-                                <td colSpan="9" className="text-center p-4 text-gray-500">No customers found.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 };
