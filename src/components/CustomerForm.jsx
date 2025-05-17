@@ -15,7 +15,16 @@ const CustomerForm = ({ onSave, initialData = null }) => {
 
     useEffect(() => {
         if (initialData) {
-            setCustomer(initialData);
+            setCustomer({
+                name: initialData.name || "",
+                mobile: initialData.mobile || "",
+                address: initialData.address || "",
+                city: initialData.city || "",
+                budget: initialData.budget || "",
+                space: initialData.space || "",
+                response: initialData.response || "Good",
+                notes: initialData.notes || "",
+            });
         }
     }, [initialData]);
 
@@ -41,7 +50,10 @@ const CustomerForm = ({ onSave, initialData = null }) => {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto p-4 bg-white rounded-lg shadow-md">
+        <form
+            onSubmit={handleSubmit}
+            className="space-y-4 max-w-md mx-auto p-4 bg-white rounded-lg shadow-md"
+        >
             {["name", "mobile", "address", "city", "budget", "space"].map((field) => (
                 <div key={field}>
                     <label htmlFor={field} className="block mb-1 font-semibold text-gray-700">
@@ -54,7 +66,6 @@ const CustomerForm = ({ onSave, initialData = null }) => {
                         value={customer[field]}
                         onChange={handleChange}
                         className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required={field === "name" || field === "mobile"}
                         placeholder={`Enter ${getLabel(field)}`}
                     />
                 </div>
