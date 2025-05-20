@@ -1,4 +1,3 @@
-// src/components/CustomerForm.jsx
 import React, { useState, useEffect } from "react";
 
 const CustomerForm = ({ onSave, initialData = null }) => {
@@ -15,16 +14,7 @@ const CustomerForm = ({ onSave, initialData = null }) => {
 
     useEffect(() => {
         if (initialData) {
-            setCustomer({
-                name: initialData.name || "",
-                mobile: initialData.mobile || "",
-                address: initialData.address || "",
-                city: initialData.city || "",
-                budget: initialData.budget || "",
-                space: initialData.space || "",
-                response: initialData.response || "Good",
-                notes: initialData.notes || "",
-            });
+            setCustomer(initialData);
         }
     }, [initialData]);
 
@@ -50,10 +40,7 @@ const CustomerForm = ({ onSave, initialData = null }) => {
     };
 
     return (
-        <form
-            onSubmit={handleSubmit}
-            className="space-y-4 max-w-md mx-auto p-4 bg-white rounded-lg shadow-md"
-        >
+        <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto p-4 bg-white rounded-lg shadow-md">
             {["name", "mobile", "address", "city", "budget", "space"].map((field) => (
                 <div key={field}>
                     <label htmlFor={field} className="block mb-1 font-semibold text-gray-700">
