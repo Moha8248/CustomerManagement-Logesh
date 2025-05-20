@@ -130,7 +130,7 @@ const CustomerListPage = () => {
     return (
         <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-3">
-                <h1 className="text-xl sm:text-2xl font-bold text-center sm:text-left">
+                <h1 className="text-xl sm:text-2xl font-bold text-center sm:text-left animate-fadeIn">
                     Customer List
                 </h1>
                 <div className="flex gap-2 flex-wrap justify-center">
@@ -139,17 +139,17 @@ const CustomerListPage = () => {
                         placeholder="Search..."
                         value={searchTerm}
                         onChange={handleSearch}
-                        className="border px-3 py-1 rounded text-sm w-full sm:w-64"
+                        className="border px-3 py-1 rounded text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-green-500 transition"
                     />
                     <button
                         onClick={() => navigate("/add-customer")}
-                        className="bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 text-sm sm:text-base"
+                        className="bg-green-600 text-white px-3 py-1.5 rounded hover:bg-green-700 text-sm sm:text-base transform hover:scale-105 transition"
                     >
                         Add Customer
                     </button>
                     <button
                         onClick={handleLogout}
-                        className="bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700 text-sm sm:text-base"
+                        className="bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700 text-sm sm:text-base transform hover:scale-105 transition"
                     >
                         Logout
                     </button>
@@ -189,19 +189,43 @@ const CustomerListPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredCustomers.map((customer) => {
+                            {filteredCustomers.map((customer, index) => {
                                 const isEditing = editingId === customer.id;
                                 const isMobilePopup = openMobilePopupId === customer.id;
                                 return (
-                                    <tr key={customer.id} className="hover:bg-gray-50 relative">
+                                    <tr
+                                        key={customer.id}
+                                        className="hover:bg-gray-50 relative animate-fadeInUp"
+                                        style={{ animationDelay: `${index * 50}ms` }}
+                                    >
                                         {/* Reg.No */}
                                         <td className="border px-3 py-2">{customer.regNo}</td>
 
                                         {/* Date & Time */}
                                         <td className="border px-3 py-2 text-xs text-gray-600">
-                                            {customer.createdAt
-                                                ? new Date(customer.createdAt).toLocaleString()
-                                                : "-"}
+                                            {isEditing ? (
+                                                <input
+                                                    type="datetime-local"
+                                                    value={
+                                                        editedData.createdAt
+                                                            ? new Date(editedData.createdAt)
+                                                                .toISOString()
+                                                                .slice(0, 16)
+                                                            : ""
+                                                    }
+                                                    onChange={(e) =>
+                                                        handleFieldChange(
+                                                            "createdAt",
+                                                            new Date(e.target.value).toISOString()
+                                                        )
+                                                    }
+                                                    className="w-full p-1 border rounded text-xs focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                                                />
+                                            ) : customer.createdAt ? (
+                                                new Date(customer.createdAt).toLocaleString()
+                                            ) : (
+                                                "-"
+                                            )}
                                         </td>
 
                                         {/* Name */}
@@ -212,7 +236,7 @@ const CustomerListPage = () => {
                                                     onChange={(e) =>
                                                         handleFieldChange("name", e.target.value)
                                                     }
-                                                    className="w-full p-1 border rounded"
+                                                    className="w-full p-1 border rounded focus:outline-none focus:ring-2 focus:ring-green-500 transition"
                                                 />
                                             ) : (
                                                 customer.name
@@ -221,19 +245,33 @@ const CustomerListPage = () => {
 
                                         {/* Mobile with popup */}
                                         <td className="border px-3 py-2 relative">
-                                            <span
-                                                className="text-blue-600 cursor-pointer underline"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setOpenMobilePopupId((prev) =>
-                                                        prev === customer.id ? null : customer.id
-                                                    );
-                                                }}
-                                            >
-                                                {customer.mobile}
-                                            </span>
-                                            {isMobilePopup && (
-                                                <div className="absolute z-10 bg-white shadow border rounded p-2 space-y-1 text-sm top-8 left-0">
+                                            {isEditing ? (
+                                                <input
+                                                    type="tel"
+                                                    value={editedData.mobile || ""}
+                                                    onChange={(e) =>
+                                                        handleFieldChange("mobile", e.target.value)
+                                                    }
+                                                    className="w-full p-1 border rounded focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                                                />
+                                            ) : (
+                                                <span
+                                                    className="text-blue-600 cursor-pointer underline"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setOpenMobilePopupId((prev) =>
+                                                            prev === customer.id ? null : customer.id
+                                                        );
+                                                    }}
+                                                >
+                                                    {customer.mobile}
+                                                </span>
+                                            )}
+                                            {isMobilePopup && !isEditing && (
+                                                <div
+                                                    className="absolute z-10 bg-white shadow border rounded p-2 space-y-1 text-sm top-8 left-0 animate-popupFadeIn"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
                                                     <a
                                                         href={`https://wa.me/${customer.mobile}`}
                                                         target="_blank"
@@ -253,56 +291,90 @@ const CustomerListPage = () => {
                                         </td>
 
                                         {/* Rest of the fields */}
-                                        {["address", "city", "budget", "space", "response", "notes"].map(
-                                            (field) => (
-                                                <td key={field} className="border px-3 py-2">
-                                                    {isEditing ? (
-                                                        <input
-                                                            value={editedData[field] || ""}
-                                                            onChange={(e) =>
-                                                                handleFieldChange(field, e.target.value)
-                                                            }
-                                                            className="w-full p-1 border rounded"
-                                                        />
-                                                    ) : (
-                                                        customer[field]
-                                                    )}
-                                                </td>
-                                            )
-                                        )}
+                                        {["address", "city", "budget", "space"].map((field) => (
+                                            <td key={field} className="border px-3 py-2">
+                                                {isEditing ? (
+                                                    <input
+                                                        value={editedData[field] || ""}
+                                                        onChange={(e) =>
+                                                            handleFieldChange(field, e.target.value)
+                                                        }
+                                                        className="w-full p-1 border rounded focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                                                    />
+                                                ) : (
+                                                    customer[field]
+                                                )}
+                                            </td>
+                                        ))}
+
+                                        {/* Response Dropdown */}
+                                        <td className="border px-3 py-2">
+                                            {isEditing ? (
+                                                <select
+                                                    value={editedData.response || ""}
+                                                    onChange={(e) =>
+                                                        handleFieldChange("response", e.target.value)
+                                                    }
+                                                    className="w-full p-1 border rounded focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                                                >
+                                                    <option value="">Select</option>
+                                                    <option value="Hot">Hot</option>
+                                                    <option value="Warm">Warm</option>
+                                                    <option value="Bad">Bad</option>
+                                                </select>
+                                            ) : (
+                                                customer.response
+                                            )}
+                                        </td>
+
+                                        {/* Notes */}
+                                        <td className="border px-3 py-2">
+                                            {isEditing ? (
+                                                <textarea
+                                                    value={editedData.notes || ""}
+                                                    onChange={(e) =>
+                                                        handleFieldChange("notes", e.target.value)
+                                                    }
+                                                    className="w-full p-1 border rounded resize-none focus:outline-none focus:ring-2 focus:ring-green-500 transition"
+                                                    rows={2}
+                                                />
+                                            ) : (
+                                                customer.notes
+                                            )}
+                                        </td>
 
                                         {/* Actions */}
-                                        <td className="border px-3 py-2 text-center">
+                                        <td className="border px-3 py-2 text-center space-x-1 whitespace-nowrap">
                                             {isEditing ? (
-                                                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                                                <>
                                                     <button
                                                         onClick={() => handleSave(customer.id)}
-                                                        className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700"
+                                                        className="bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700 transform hover:scale-110 transition"
                                                     >
                                                         Save
                                                     </button>
                                                     <button
                                                         onClick={handleCancel}
-                                                        className="bg-gray-600 text-white px-2 py-1 rounded hover:bg-gray-700"
+                                                        className="bg-gray-400 text-white px-2 py-1 rounded hover:bg-gray-500 transform hover:scale-110 transition"
                                                     >
                                                         Cancel
                                                     </button>
-                                                </div>
+                                                </>
                                             ) : (
-                                                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                                                <>
                                                     <button
                                                         onClick={() => handleEdit(customer)}
-                                                        className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700"
+                                                        className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transform hover:scale-110 transition"
                                                     >
                                                         Edit
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(customer.id)}
-                                                        className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700"
+                                                        className="bg-red-600 text-white px-2 py-1 rounded hover:bg-red-700 transform hover:scale-110 transition"
                                                     >
                                                         Delete
                                                     </button>
-                                                </div>
+                                                </>
                                             )}
                                         </td>
                                     </tr>
@@ -310,11 +382,6 @@ const CustomerListPage = () => {
                             })}
                         </tbody>
                     </table>
-                    {filteredCustomers.length === 0 && (
-                        <div className="text-center py-4 text-gray-600">
-                            No matching customers found.
-                        </div>
-                    )}
                 </div>
             )}
         </div>

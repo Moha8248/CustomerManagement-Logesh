@@ -84,6 +84,7 @@ const AddCustomerPage = () => {
           Add New Customer
         </h1>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Input Fields */}
           {[
             { label: "Name", name: "name" },
             { label: "Mobile", name: "mobile", type: "tel" },
@@ -91,7 +92,6 @@ const AddCustomerPage = () => {
             { label: "City", name: "city" },
             { label: "Budget", name: "budget" },
             { label: "Space (Sq Ft)", name: "space" },
-            { label: "Response", name: "response" },
             { label: "Notes", name: "notes" },
           ].map((field) => (
             <div key={field.name} className="flex flex-col">
@@ -102,10 +102,29 @@ const AddCustomerPage = () => {
                 value={formData[field.name]}
                 onChange={handleChange}
                 className="p-2 border rounded text-sm"
+              // Removed required attribute here
               />
             </div>
           ))}
 
+          {/* Response Dropdown */}
+          <div className="flex flex-col">
+            <label className="text-sm text-gray-700 mb-1">Response</label>
+            <select
+              name="response"
+              value={formData.response}
+              onChange={handleChange}
+              className="p-2 border rounded text-sm"
+            // removed required attribute here
+            >
+              <option value="">Select</option>
+              <option value="Hot">Hot</option>
+              <option value="Warm">Warm</option>
+              <option value="Bad">Bad</option>
+            </select>
+          </div>
+
+          {/* Buttons */}
           <div className="sm:col-span-2 flex flex-col sm:flex-row justify-center sm:justify-start gap-3 mt-4">
             <button
               type="submit"
