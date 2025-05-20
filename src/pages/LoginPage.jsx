@@ -1,8 +1,8 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
-import { useNavigate } from "react-router-dom";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
     const [email, setEmail] = useState("");
@@ -10,59 +10,54 @@ const LoginPage = () => {
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            toast.success("Logged in successfully!");
+            toast.success("Login successful!");
             navigate("/customers");
         } catch (error) {
-            toast.error(error.message);
+            toast.error("Login failed: " + error.message);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-tr from-blue-500 to-indigo-700 px-4">
-            <ToastContainer />
-            <form
-                onSubmit={handleSubmit}
-                className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full"
-            >
-                <h2 className="text-2xl font-bold mb-6 text-center text-indigo-700">Login</h2>
-                <div className="mb-4">
-                    <label className="block mb-1 font-semibold">Email</label>
-                    <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder="your.email@example.com"
-                    />
-                </div>
-                <div className="mb-6">
-                    <label className="block mb-1 font-semibold">Password</label>
-                    <input
-                        type="password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                        placeholder="********"
-                    />
-                </div>
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className={`w-full py-2 rounded text-white font-semibold ${loading ? "bg-indigo-300 cursor-not-allowed" : "bg-indigo-600 hover:bg-indigo-700"
-                        }`}
-                >
-                    {loading ? "Logging in..." : "Login"}
-                </button>
-            </form>
+        <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+            <div className="bg-white p-6 sm:p-8 rounded-lg shadow-md w-full max-w-md">
+                <h1 className="text-xl sm:text-2xl font-bold mb-6 text-center">Login</h1>
+                <form onSubmit={handleLogin}>
+                    <div className="mb-4">
+                        <label className="block text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base">Email</label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full p-2 border rounded text-sm sm:text-base"
+                            required
+                        />
+                    </div>
+                    <div className="mb-6">
+                        <label className="block text-gray-700 mb-1 sm:mb-2 text-sm sm:text-base">Password</label>
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="w-full p-2 border rounded text-sm sm:text-base"
+                            required
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50 text-sm sm:text-base"
+                    >
+                        {loading ? "Logging in..." : "Login"}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 };

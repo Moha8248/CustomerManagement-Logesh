@@ -1,64 +1,32 @@
-// src/App.jsx
-import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { auth } from "./firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { useState, useEffect } from "react";
 import LoginPage from "./pages/LoginPage";
 import CustomerListPage from "./pages/CustomerListPage";
 import AddCustomerPage from "./pages/AddCustomerPage";
-import EditCustomerPage from "./pages/EditCustomerPage";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
 
-const PrivateRoute = ({ children }) => {
+function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
       setLoading(false);
     });
-
     return () => unsubscribe();
   }, []);
 
-  if (loading) {
-    return <div className="text-center mt-20">Loading...</div>;
-  }
+  if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
 
-  return user ? children : <Navigate to="/" />;
-};
-
-function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LoginPage />} />
-        <Route
-          path="/customers"
-          element={
-            <PrivateRoute>
-              <CustomerListPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/add"
-          element={
-            <PrivateRoute>
-              <AddCustomerPage />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/edit/:id"
-          element={
-            <PrivateRoute>
-              <EditCustomerPage />
-            </PrivateRoute>
-          }
-        />
-        {/* Redirect unknown routes to login */}
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/login" element={user ? <Navigate to="/customers" /> : <LoginPage />} />
+        <Route path="/customers" element={user ? <CustomerListPage /> : <Navigate to="/login" />} />
+        <Route path="/add-customer" element={user ? <AddCustomerPage /> : <Navigate to="/login" />} />
+        <Route path="/" element={<Navigate to={user ? "/customers" : "/login"} />} />
       </Routes>
     </Router>
   );
